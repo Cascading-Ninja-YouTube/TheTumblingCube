@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tumbling Cube</title>
+
+    <style>
+     
+		body
+		{
+  		    	background: #fff ;
+            margin: 0;
+            padding: 0;
+            overflow: hidden !important;
+            height: 200vh !important;
+            width:120vw !important;
+		}
+       
+        
+ 
+
+    </style>
+</head>
+<body>
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.js" integrity="sha512-tmdOKTY7I6MOUcCL/9fa4s+BnBCgEuifJImOX46m36+rxVMcgHEPGLVoCXHR6ZvjcKGoVixEiBKE4LcYLnv0Cw==" crossorigin="anonymous"></script>
+	<script>
+
+  // Customizers
+  
+var speed=3; // Change speed of animation . !!Advisable speed range= 1 to 20  else set to 3!!
+var cubeColor= "red"; //change color of cube
+var size = 4; // change size of cube
+var bgcolor="#07648c" //change background color
+
+// initialise scene,camera, renderer, components
+	var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(50,window.innerWidth / window.innerHeight,.1,1000)
+    
+    var renderer = new THREE.WebGLRenderer({antialias: true, alpha:true});        
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+
+        camera.updateProjectionMatrix();
+    })
+
+    const ambient = new THREE.AmbientLight( 0x404040,1.2 ); // soft white light
+    scene.add( ambient );
+
+    var light = new THREE.SpotLight( "yellow", 0.1, 1.4, 4, 12.8,0.4);
+    
+    light.position.set( 120, -120, 100 );
+    light.castShadow = true; 
+
+    light.shadow.mapSize.width = 1024;
+    light.shadow.mapSize.height = 1024;
+
+    light.shadow.camera.near = 500;
+    light.shadow.camera.far = 4000;
+    light.shadow.camera.fov = 30;
+    scene.add(light);
+
+const light2 = new THREE.DirectionalLight( 0xffffff, 0.8);
+light2.position.set( 6, 12, 20 ); //default; light shining from top
+
+scene.add( light2 );
+
+//Set up shadow properties for the light
+light2.shadow.mapSize.width = 512; // default
+light2.shadow.mapSize.height = 512; // default
+light2.shadow.camera.near = 0.5; // default
+light2.shadow.camera.far = 200; // default
+
+
+  
+camera.position.set(1, 50,0 );
+camera.lookAt(scene.position);
+var tiles = [];
+
+function createPlane(x,y,z,color){
+  if(color == undefined){
+    color = "red";
+  }
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.color = color;
+  var geometry = new THREE.CubeGeometry( 160,0.8, 150 );
+  var material = new THREE.MeshLambertMaterial( { color: "green",  emissive: this.color } );
+  geometry.applyMatrix( new THREE.Matrix4().makeTranslation( this.x, this.y, this.z ) );
+  var tile = new THREE.Mesh( geometry, material );
+  
+  scene.add( tile );
+  tile.receiveShadow=true;
+  tiles.push(tile);
+}
+
+new createPlane(-4,0,0,`${bgcolor}`)
+
+
+
+const texture = new THREE.TextureLoader().load( 'texture.jpg' );
+var geometry = new THREE.CubeGeometry(`${size}`,`${size}`,`${size}` );
+var material = new THREE.MeshLambertMaterial( { color: `${cubeColor}`, shading:  THREE.NoShading, emissive: 0x444444 } );
+// const material = new THREE.MeshStandardMaterial( { map: texture , metalness:0} );
+
+
+
+var LoadingCube = new THREE.Mesh( geometry, material );
+geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -2, 2, 2 ) );
+LoadingCube.rotation.x = Math.PI + (Math.PI/2);
+LoadingCube.position.x = -6;
+LoadingCube.position.y = 1.25;
+LoadingCube.position.z = 2;
+LoadingCube.castShadow=true;
+scene.add( LoadingCube );
+
+  var backFace=false;
+    var render = function() {
+    requestAnimationFrame(render);
+  if(speed>0 &&speed<20)
+  {
+  if(LoadingCube.rotation.x >=Math.PI*2|| backFace==true)
+  {
+    if( LoadingCube.rotation.z<=-(Math.PI/2))
+    {
+      backFace=true;
+      if(LoadingCube.rotation.x<=(Math.PI+(Math.PI/2)))
+      {
+        if(LoadingCube.rotation.y<= -(Math.PI/2))
+        {
+          backFace=false;
+          LoadingCube.rotation.x= Math.PI +(Math.PI/2);
+          LoadingCube.rotation.y=0;
+          LoadingCube.rotation.z=0
+        }
+        else{
+          LoadingCube.rotation.y-=(speed/100)
+        }
+      }
+      else{
+        LoadingCube.rotation.x-=(speed/100)
+      }
+    }
+    else{
+      LoadingCube.rotation.z-=(speed/100)
+    }
+  }
+  else
+  {
+    LoadingCube.rotation.x+=(speed/100)
+  }
+  }
+  else{
+    speed=3;
+  }
+
+        renderer.render(scene, camera);
+    }
+
+// controls.update()
+    render();
+
+
+
+</script>   
+  
+</body>
+</html>
